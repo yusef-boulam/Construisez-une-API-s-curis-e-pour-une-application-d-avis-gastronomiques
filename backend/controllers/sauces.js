@@ -3,7 +3,22 @@ const fs = require('fs');
 
 // gestion des ROUTES
 
-    //ON CREE UNE NOUVELLE SAUCE
+
+ // ROUTE GET ALL SAUCES
+ exports.getAllSauce = (req, res, next) => {
+    Sauce.find()
+        .then(sauces => res.status(200).json(sauces))
+        .catch(error => res.status(400).json({ error }));
+}
+
+// ROUTE GET qui cible UNE SAUCE
+exports.getOneSauce = (req, res, next) => {
+    Sauce.findOne({ _id: req.params.id })
+        .then(sauce => res.status(200).json(sauce))
+        .catch(error => res.status(404).json({ error }));
+}
+
+ //ON CREE UNE NOUVELLE SAUCE
     exports.createSauce = (req, res, next) => {
         const sauceObject = JSON.parse(req.body.Sauce);
           //on supprime les identifiants de l'objet
@@ -23,6 +38,7 @@ const fs = require('fs');
         .catch(error => { res.status(400).json( { error })})
      };
 
+
 // ON MODIFIE UNE SAUCE
 exports.modifySauce = (req, res, next) => {
     const sauceObject = req.file ? {
@@ -30,6 +46,7 @@ exports.modifySauce = (req, res, next) => {
         imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
     } : { ...req.body };
  
+
 // ON SUPPRIME UNE SAUCE
     delete sauceObject._userId;
  Sauce.findOne({_id: req.params.id})
@@ -66,14 +83,24 @@ exports.modifySauce = (req, res, next) => {
         });
  };
 
-exports.getOneSauce = (req, res, next) => {
-    Sauce.findOne({ _id: req.params.id })
-        .then(sauce => res.status(200).json(sauce))
-        .catch(error => res.status(404).json({ error }));
-}
 
-exports.getAllSauce = (req, res, next) => {
-    Sauce.find()
-        .then(sauces => res.status(200).json(sauces))
-        .catch(error => res.status(400).json({ error }));
-}
+
+ // LIKER OU DISLIKER DE LA SAUCE 
+  exports.likeSauce = (req, res, next) => {
+    const sauceObject = JSON.parse(req.body.Sauce);
+      //on supprime les identifiants de l'objet
+    delete sauceObject._id;
+    delete sauceObject._userId;
+
+    const sauce = new Sauce({
+        // on stocque le nouvel objet sans les ID
+        ...sauceObject,
+        //recuperartion du user id directement du TOKEN
+        userId: req.auth.userId,
+    });
+    // on sauvegarder la sauce sur le serveur
+    sauce.save()
+    .then(() => { res.status(201).json({message: 'Objet enregistré !'})})
+    .catch(error => { res.status(400).json( { error })})
+ };
+
