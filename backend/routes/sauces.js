@@ -4,23 +4,23 @@ const router = express.Router();
 const auth = require('../middleware/auth');
 const multer = require('../middleware/multer-config')
 
-const stuffCtrl = require('../controllers/stuff')
+const saucesCtrl = require('../controllers/sauces')
 
 
 // ROUTE POST CEER UN OBJET
-router.post('/', auth, multer, stuffCtrl.createThing);
+router.post('/', auth, multer, saucesCtrl.createSauce);
 
 // MODIFICATION DE LOBJET
-router.put('/:id', auth, multer, stuffCtrl.modifyThing);
+router.put('/:id', auth, multer, saucesCtrl.modifySauce);
 
 // SUPPRESSION DE LOBJET
-router.delete('/:id', auth, stuffCtrl.deleteThing);
+router.delete('/:id', auth, saucesCtrl.deleteSauce);
 
 // ROUTE GET qui cible un objet
-router.get('/:id', auth, stuffCtrl.getOneThing);
+router.get('/:id', auth, saucesCtrl.getOneSauce);
 
 // ROUTE GET ALL
-router.use('/', auth, stuffCtrl.getAllThing);
+router.use('/', auth, saucesCtrl.getAllSauce);
 
 
 module.exports = router;

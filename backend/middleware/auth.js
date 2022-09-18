@@ -1,4 +1,6 @@
 const jwt = require('jsonwebtoken');
+
+// creation du TOKEN utilisateur
  
 module.exports = (req, res, next) => {
    try {

@@ -1,4 +1,5 @@
 const http = require('http');
+// on charge l'application app dans la constante app
 const app = require('./app');
 
 const normalizePort = val => {
@@ -12,6 +13,8 @@ const normalizePort = val => {
   }
   return false;
 };
+
+// on indique le port d'ecoute environnment ou 3000
 const port = normalizePort(process.env.PORT || '3000');
 app.set('port', port);
 
@@ -35,6 +38,7 @@ const errorHandler = error => {
   }
 };
 
+// on passe la constante app en paramètre sur la création du server
 const server = http.createServer(app);
 
 server.on('error', errorHandler);
