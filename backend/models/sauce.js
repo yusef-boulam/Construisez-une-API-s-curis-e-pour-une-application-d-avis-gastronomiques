@@ -14,7 +14,7 @@ const modelSauce = mongoose.Schema({
   imageUrl: { type: String, required: true },
   mainPepper: { type: String, required: true },
   usersLiked: [{ type: String, required: true }],
-  usersDisliked: string[{ type: String, required: true }],
+  usersDisliked: [{ type: String, required: true }],
   userId:{ type: String, required: true },
 });
 

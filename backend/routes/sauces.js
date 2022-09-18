@@ -7,19 +7,19 @@ const multer = require('../middleware/multer-config')
 const saucesCtrl = require('../controllers/sauces')
 
 
-// ROUTE POST CEER UN OBJET
+// ROUTE POST CEER UNE SAUCE
 router.post('/', auth, multer, saucesCtrl.createSauce);
 
-// MODIFICATION DE LOBJET
+// MODIFICATION DE LA SAUCE 
 router.put('/:id', auth, multer, saucesCtrl.modifySauce);
 
-// SUPPRESSION DE LOBJET
+// SUPPRESSION DE LA SAUCE
 router.delete('/:id', auth, saucesCtrl.deleteSauce);
 
-// ROUTE GET qui cible un objet
+// ROUTE GET qui cible UNE SAUCE
 router.get('/:id', auth, saucesCtrl.getOneSauce);
 
-// ROUTE GET ALL
+// ROUTE GET ALL SAUCES
 router.use('/', auth, saucesCtrl.getAllSauce);
 
 
