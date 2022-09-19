@@ -6,6 +6,7 @@ const fs = require('fs');
 
  // ROUTE GET ALL SAUCES
  exports.getAllSauce = (req, res, next) => {
+    //on utilise la methode find pour recuperer toutes les sauces
     Sauce.find()
         .then(sauces => res.status(200).json(sauces))
         .catch(error => res.status(400).json({ error }));
@@ -13,6 +14,7 @@ const fs = require('fs');
 
 // ROUTE GET qui cible UNE SAUCE
 exports.getOneSauce = (req, res, next) => {
+    //findOne permet de cible la sauce. en parametre on compare l'id recherché
     Sauce.findOne({ _id: req.params.id })
         .then(sauce => res.status(200).json(sauce))
         .catch(error => res.status(404).json({ error }));
@@ -26,7 +28,8 @@ exports.getOneSauce = (req, res, next) => {
         delete sauceObject._userId;
 
         const sauce = new Sauce({
-            // on stocque le nouvel objet sans les ID
+            // on stocke le nouvel objet sans les ID
+
             ...sauceObject,
             //recuperartion du user id directement du TOKEN
             userId: req.auth.userId,
@@ -84,23 +87,25 @@ exports.modifySauce = (req, res, next) => {
  };
 
 
-
  // LIKER OU DISLIKER DE LA SAUCE 
   exports.likeSauce = (req, res, next) => {
-    const sauceObject = JSON.parse(req.body.Sauce);
-      //on supprime les identifiants de l'objet
-    delete sauceObject._id;
-    delete sauceObject._userId;
-
-    const sauce = new Sauce({
-        // on stocque le nouvel objet sans les ID
-        ...sauceObject,
-        //recuperartion du user id directement du TOKEN
+   if(req.body.like===1) {
+    const like = new Like({
+        likes: req.body.like,
         userId: req.auth.userId,
-    });
-    // on sauvegarder la sauce sur le serveur
-    sauce.save()
-    .then(() => { res.status(201).json({message: 'Objet enregistré !'})})
-    .catch(error => { res.status(400).json( { error })})
- };
-
+      });
+      like.save().then(
+        () => {
+          res.status(201).json({
+            message: 'sauce likes!'
+          });
+        }
+      ).catch(
+        (error) => {
+          res.status(400).json({
+            error: error
+          });
+        }
+      );
+    }
+    };

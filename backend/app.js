@@ -9,6 +9,7 @@ const saucesRoutes = require('./routes/sauces');
 // chargment de la partie autentification
 const userRoutes = require('./routes/user');
 
+//middleware qui va extraire le corp JSON du front
 const app = express();
 
 // LOGIQUE DE CONNECTION A MANGO DB
