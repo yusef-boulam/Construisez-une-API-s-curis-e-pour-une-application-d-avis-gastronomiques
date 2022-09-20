@@ -1,10 +1,9 @@
 const sauce = require('../models/sauce');
 const fs = require('fs');
 
-// gestion des ROUTES
+// gestion des ROUTES.   toute la partie "metier"
 
-
- // ROUTE GET ALL SAUCES
+ // ROUTE GET ALL SAUCES - on exporte la fonction
  exports.getAllSauce = (req, res, next) => {
     //on utilise la methode find pour recuperer toutes les sauces
     Sauce.find()
@@ -41,7 +40,6 @@ exports.getOneSauce = (req, res, next) => {
         .catch(error => { res.status(400).json( { error })})
      };
 
-
 // ON MODIFIE UNE SAUCE
 exports.modifySauce = (req, res, next) => {
     const sauceObject = req.file ? {
@@ -49,7 +47,6 @@ exports.modifySauce = (req, res, next) => {
         imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
     } : { ...req.body };
  
-
 // ON SUPPRIME UNE SAUCE
     delete sauceObject._userId;
  Sauce.findOne({_id: req.params.id})
@@ -85,7 +82,6 @@ exports.modifySauce = (req, res, next) => {
             res.status(500).json({ error });
         });
  };
-
 
  // LIKER OU DISLIKER DE LA SAUCE 
   exports.likeSauce = (req, res, next) => {

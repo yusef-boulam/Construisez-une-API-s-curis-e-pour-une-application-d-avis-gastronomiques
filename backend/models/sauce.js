@@ -1,3 +1,4 @@
+//chargement des modules
 const mongoose = require('mongoose');
 
 // GESION DU MODEL SAUCE

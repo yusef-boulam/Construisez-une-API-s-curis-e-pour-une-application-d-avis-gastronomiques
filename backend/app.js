@@ -9,7 +9,7 @@ const saucesRoutes = require('./routes/sauces');
 // chargment de la partie autentification
 const userRoutes = require('./routes/user');
 
-//middleware qui va extraire le corp JSON du front
+// on charge express dans la constante app
 const app = express();
 
 // LOGIQUE DE CONNECTION A MANGO DB
@@ -20,7 +20,7 @@ mongoose.connect('mongodb+srv://yusefdev:test1234@cluster0.gxfyist.mongodb.net/?
   .catch(() => console.log('Connexion à MongoDB échouée !'));
 
 
-// BODY PARSER
+//middleware qui va extraire le corp JSON du front
 app.use(express.json());
 
 // AUTENTIFICATION CORS qui ajoute des header et va permettre à l'application d'acceder a l API
