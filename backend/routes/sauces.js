@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 
+// on importe auth qui verifie l'autorisation du toket et transmet l'identifiant Id aux gestionnaires de routes
 const auth = require('../middleware/auth');
 const multer = require('../middleware/multer-config')
 
@@ -8,7 +9,7 @@ const saucesCtrl = require('../controllers/sauces')
 
 
 // ROUTE GET ALL SAUCES
-router.use('/', auth, saucesCtrl.getAllSauce);
+router.get('/', auth, saucesCtrl.getAllSauce);
 
 // ROUTE GET qui cible UNE SAUCE
 router.get('/:id', auth, saucesCtrl.getOneSauce);

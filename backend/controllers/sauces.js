@@ -1,4 +1,4 @@
-const sauce = require('../models/sauce');
+const Sauce = require('../models/sauce');
 const fs = require('fs');
 
 // gestion des ROUTES.   toute la partie "metier"
@@ -21,10 +21,8 @@ exports.getOneSauce = (req, res, next) => {
 
  //ON CREE UNE NOUVELLE SAUCE
     exports.createSauce = (req, res, next) => {
-        const sauceObject = JSON.parse(req.body.Sauce);
+        const sauceObject = JSON.parse(req.body.sauce);
           //on supprime les identifiants de l'objet
-        delete sauceObject._id;
-        delete sauceObject._userId;
 
         const sauce = new Sauce({
             // on stocke le nouvel objet sans les ID
@@ -36,7 +34,7 @@ exports.getOneSauce = (req, res, next) => {
         });
         // on sauvegarder la sauce sur le serveur
         sauce.save()
-        .then(() => { res.status(201).json({message: 'Objet enregistré !'})})
+        .then(() => { res.status(201).json({message: 'Objet enregistré !'})})  // RENVOYER LA REPONSE
         .catch(error => { res.status(400).json( { error })})
      };
 

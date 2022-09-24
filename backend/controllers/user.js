@@ -5,6 +5,8 @@ const jwt = require('jsonwebtoken');
 
 const User = require('../models/user')
 
+require('dotenv').config()
+
 // gestion de l'autentification
 
 //hachage du mot de passe à la création d'un utilisateur
@@ -45,9 +47,13 @@ exports.signup = (req, res, next) => {
                 // si ok on retourne l'objet avec le TOKEN
                     res.status(200).json({
                         userId: user._id,
+                        // création du TOKEN a l'aide du package
                         token: jwt.sign(
+                          // premier argument pour s'assurer qu'on l'applique bien a notre utilisateur
                             { userId: user._id },
-                            'RANDOM_TOKEN_SECRET',
+                          // deuxieme argument qui est la cléfs secrete du TOKEN a complexifier pour augmenter la securité
+                          process.env.TOKEN,
+                          // troisieme argument est la durée de validité du TOKEN
                             { expiresIn: '24h' }
                         )
                     });
