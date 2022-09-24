@@ -7,13 +7,13 @@ const User = require('../models/user')
 
 require('dotenv').config()
 
-// gestion de l'autentification
+// CREATION D UN COMPTE
 
 //hachage du mot de passe à la création d'un utilisateur
 
 exports.signup = (req, res, next) => {
   //on utilise la methode hash que l'on fait mouliner 10 fois
-    bcrypt.hash(req.body.password, 10)
+    bcrypt.hash(req.body.password.trim(), 10)
       .then(hash => {
         const user = new User({
           email: req.body.email,
@@ -27,7 +27,7 @@ exports.signup = (req, res, next) => {
       .catch(error => res.status(500).json({ error }));
   };
 
-//comparaison des H et acces au compte
+//CONNECTION AU COMPTE - COMPARAISON DES H
 
   exports.login = (req, res, next) => {
     // on filtre la base de donnée pour trouver l'utilisateur
@@ -52,7 +52,7 @@ exports.signup = (req, res, next) => {
                           // premier argument pour s'assurer qu'on l'applique bien a notre utilisateur
                             { userId: user._id },
                           // deuxieme argument qui est la cléfs secrete du TOKEN a complexifier pour augmenter la securité
-                          process.env.TOKEN,
+                          process.env.TOKEN,     
                           // troisieme argument est la durée de validité du TOKEN
                             { expiresIn: '24h' }
                         )
