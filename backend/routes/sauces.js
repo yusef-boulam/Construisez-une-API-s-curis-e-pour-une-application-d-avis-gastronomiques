@@ -6,13 +6,13 @@ const auth = require('../middleware/auth');
 const multer = require('../middleware/multer-config')
 
 const saucesCtrl = require('../controllers/sauces')
-const likesCtrl = require('../controllers/likes')
+
 
 
 // ROUTE GET ALL SAUCES
 // on applique le middleware auth à toutes les routes que l'on veut proteger
 //il faut placer auth avant les routes sinon il ne fonctionne pas
-router.get('/', auth, saucesCtrl.getAllSauce); 
+router.get('/', auth, saucesCtrl.getAllSauce);
 
 // ROUTE GET qui cible UNE SAUCE
 router.get('/:id', auth, saucesCtrl.getOneSauce);
@@ -24,15 +24,10 @@ router.post('/', auth, multer, saucesCtrl.createSauce);
 // SUPPRESSION DE LA SAUCE
 router.delete('/:id', auth, saucesCtrl.deleteSauce);
 
-// MODIFICATION DE LA SAUCE 
+// MODIFICATION DE LA SAUCE
 router.put('/:id', auth, multer, saucesCtrl.modifySauce);
 
 // LIKER OU DISLIKER DE LA SAUCE 
-router.post('/:id/like', auth, likesCtrl.likeSauce);
-
-
-
-
-
+router.post('/:id/like', auth, multer, saucesCtrl.modifyLikes);
 
 module.exports = router;

@@ -6,13 +6,12 @@ const path = require('path');
 
 // chargment des fichiers routes
 const saucesRoutes = require('./routes/sauces');
-const likesRoutes = require('./routes/likes');
 // chargment de la partie autentification
 const userRoutes = require('./routes/user');
 
 
 // on charge express dans la constante app
-const app = express()
+const app = express();
 
 // LOGIQUE DE CONNECTION A MANGO DB
 mongoose.connect('mongodb+srv://yusefdev:test1234@cluster0.gxfyist.mongodb.net/?retryWrites=true&w=majority',
@@ -37,8 +36,6 @@ app.use((req, res, next) => {
 app.use('/api/auth', userRoutes);
 //execution des routes sauces
 app.use('/api/sauces', saucesRoutes);
-//execution des routes like
-app.use('/api/likes', likesRoutes);
 //gestion du chargement des images
 app.use('/images', express.static(path.join(__dirname, 'images')));
 
