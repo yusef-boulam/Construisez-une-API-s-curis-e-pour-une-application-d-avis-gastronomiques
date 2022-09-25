@@ -9,12 +9,15 @@ const saucesCtrl = require('../controllers/sauces')
 
 
 // ROUTE GET ALL SAUCES
-router.get('/', auth, saucesCtrl.getAllSauce);
+// on applique le middleware auth à toutes les routes que l'on veut proteger
+//il faut placer auth avant les routes sinon il ne fonctionne pas
+router.get('/', auth, saucesCtrl.getAllSauce); 
 
 // ROUTE GET qui cible UNE SAUCE
 router.get('/:id', auth, saucesCtrl.getOneSauce);
 
 // ROUTE POST CEER UNE SAUCE
+// placer multer avec la route
 router.post('/', auth, multer, saucesCtrl.createSauce);
 
 // SUPPRESSION DE LA SAUCE

@@ -17,7 +17,7 @@ exports.signup = (req, res, next) => {
   // bcrypt.genSalt(SALT_WORK_FACTOR, function (err, salt) {
   //   if (err) return next(err);
 
-  // TEST DE LA PASSWORD
+  // TEST de la complexite de la password
   const password = req.body.password
   if (/^(?=.*\d)(?=.*[A-Z])(?=.*[a-z])(?=.*[^\w\d\s:])([^\s]){8,50}$/.test(password) === false) {
     res.status(400).json({ error: "le mot de passe n'est pas valide ! il doit contenir au minimum huit et maximum 50 caractères, au moins une lettre majuscule, une lettre minuscule, un chiffre et un caractère spécial!"})

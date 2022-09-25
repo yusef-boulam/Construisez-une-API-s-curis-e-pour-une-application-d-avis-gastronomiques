@@ -10,7 +10,7 @@ const saucesRoutes = require('./routes/sauces');
 const userRoutes = require('./routes/user');
 
 // on charge express dans la constante app
-const app = express();
+const app = express()
 
 // LOGIQUE DE CONNECTION A MANGO DB
 mongoose.connect('mongodb+srv://yusefdev:test1234@cluster0.gxfyist.mongodb.net/?retryWrites=true&w=majority',
