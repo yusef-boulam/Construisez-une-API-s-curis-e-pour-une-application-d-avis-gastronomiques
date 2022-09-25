@@ -3,10 +3,10 @@ const mongoose = require('mongoose');
 
 // GESION DU MODEL SAUCE
 
-const modelLike = mongoose.Schema({
+const modelLikes = mongoose.Schema({
    likes: { type: Number, required: true },
    dislikes: { type: Number, required: true},
 
 });
 
-module.exports = mongoose.model('modelSauce', modelLike);
+module.exports = mongoose.model('modelLike', modelLikes);

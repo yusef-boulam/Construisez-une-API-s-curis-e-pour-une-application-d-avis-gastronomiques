@@ -6,8 +6,10 @@ const path = require('path');
 
 // chargment des fichiers routes
 const saucesRoutes = require('./routes/sauces');
+const likesRoutes = require('./routes/likes');
 // chargment de la partie autentification
 const userRoutes = require('./routes/user');
+
 
 // on charge express dans la constante app
 const app = express()
@@ -31,11 +33,12 @@ app.use((req, res, next) => {
   next();
 });
 
-
-//execution des routes sauces
-app.use('/api/sauces', saucesRoutes);
 //execution des routes d'autentification
 app.use('/api/auth', userRoutes);
+//execution des routes sauces
+app.use('/api/sauces', saucesRoutes);
+//execution des routes like
+app.use('/api/likes', likesRoutes);
 //gestion du chargement des images
 app.use('/images', express.static(path.join(__dirname, 'images')));
 

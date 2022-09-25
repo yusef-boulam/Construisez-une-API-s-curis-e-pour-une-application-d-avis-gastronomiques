@@ -6,6 +6,7 @@ const auth = require('../middleware/auth');
 const multer = require('../middleware/multer-config')
 
 const saucesCtrl = require('../controllers/sauces')
+const likesCtrl = require('../controllers/likes')
 
 
 // ROUTE GET ALL SAUCES
@@ -27,7 +28,7 @@ router.delete('/:id', auth, saucesCtrl.deleteSauce);
 router.put('/:id', auth, multer, saucesCtrl.modifySauce);
 
 // LIKER OU DISLIKER DE LA SAUCE 
-router.post('/:id/like', auth, multer, saucesCtrl.likeSauce);
+router.post('/:id/like', auth, likesCtrl.likeSauce);
 
 
 

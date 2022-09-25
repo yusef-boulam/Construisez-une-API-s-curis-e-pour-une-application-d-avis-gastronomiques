@@ -84,25 +84,4 @@ exports.deleteSauce = (req, res, next) => {
       });
 };
 
-// LIKER OU DISLIKER DE LA SAUCE 
-exports.likeSauce = (req, res, next) => {
-  if (req.body.like === 1) {
-    const like = new Like({
-      likes: req.body.like,
-      userId: req.auth.userId,
-    });
-    like.save().then(
-      () => {
-        res.status(201).json({
-          message: 'sauce likes!'
-        });
-      }
-    ).catch(
-      (error) => {
-        res.status(400).json({
-          error: error
-        });
-      }
-    );
-  }
-};
+
