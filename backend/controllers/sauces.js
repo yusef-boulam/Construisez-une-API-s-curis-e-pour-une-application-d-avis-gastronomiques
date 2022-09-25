@@ -1,5 +1,4 @@
 const Sauce = require('../models/sauce');
-const Likes = require('../models/likes');
 const fs = require('fs');
 
 // gestion des ROUTES.   toute la partie "metier"
@@ -87,23 +86,23 @@ exports.deleteSauce = (req, res, next) => {
 
 // LIKER OU DISLIKER DE LA SAUCE 
 exports.modifyLikes = (req, res, next) => {
-  if (req.body.like === 1) {
-    const like = new Like({
-      likes: req.body.like,
-      userId: req.auth.userId,
-    });
-    like.save().then(
-      () => {
-        res.status(201).json({
-          message: 'sauce likes!'
+    console.log(req.body)
+    const sauceObject = {
+        ...req.body 
+    };
+    console.log(sauceObject)
+  
+    Sauce.findOne({_id: req.params.id})
+        .then((sauce) => {
+            if (sauce.userId != req.auth.userId) {
+                res.status(401).json({ message : 'Not authorized'});
+            } else {
+                Sauce.updateOne({ _id: req.params.id}, { ...sauceObject, _id: req.params.id})
+                .then(() => res.status(200).json({message : 'Objet modifié!'}))
+                .catch(error => res.status(401).json({ error }));
+            }
+        })
+        .catch((error) => {
+            res.status(400).json({ error });
         });
-      }
-    ).catch(
-      (error) => {
-        res.status(400).json({
-          error: error
-        });
-      }
-    );
-  }
-};
+  };
