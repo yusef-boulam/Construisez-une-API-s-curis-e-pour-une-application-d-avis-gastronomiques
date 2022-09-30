@@ -4,6 +4,8 @@ const mongoose = require('mongoose');
 const express = require('express');
 const path = require('path');
 
+require('dotenv').config()
+
 // chargment des fichiers routes
 const saucesRoutes = require('./routes/sauces');
 // chargment de la partie autentification
@@ -13,8 +15,9 @@ const userRoutes = require('./routes/user');
 // on charge express dans la constante app
 const app = express();
 
+
 // LOGIQUE DE CONNECTION A MANGO DB
-mongoose.connect('mongodb+srv://yusefdev:test1234@cluster0.gxfyist.mongodb.net/?retryWrites=true&w=majority',
+mongoose.connect(process.env.BDD,
   { useNewUrlParser: true,
     useUnifiedTopology: true })
   .then(() => console.log('Connexion à MongoDB réussie !'))
