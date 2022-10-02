@@ -2,13 +2,6 @@ const multer = require('multer');
 
 // gestion des images ajoutées au serveur 
 
-// creation de l'objet MIME_TYPE pour gerer l'extention de l'image (dictionnaire)
-const MIME_TYPES = {
-  'image/jpg': 'jpg',
-  'image/jpeg': 'jpg',
-  'image/png': 'png'
-};
-
 // creation d'un objet de configuration de multer
 // utilisé avec la propriété diskStorage pour l'enregistrer sur le disque
 const storage = multer.diskStorage({
@@ -21,11 +14,9 @@ const storage = multer.diskStorage({
     // on supprim les espaces et on les remplaces par des UNDERSCORES
     const name = file.originalname.split(' ').join('_');
 
-    // creation de l'extenxtion du fichier
-    const extension = MIME_TYPES[file.mimetype];
 
     // on va créer le file name entier = nom + time stamp (pour rendre le nom unique) + "." + extension
-    callback(null, name + Date.now() + '.' + extension);
+    callback(null, Date.now() + "_" + name);
   }
 });
 

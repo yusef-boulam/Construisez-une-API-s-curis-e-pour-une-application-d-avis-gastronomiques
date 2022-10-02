@@ -114,11 +114,10 @@ exports.modifyLikes = (req, res, next,) => {
     } else if (req.body.like === 0) {
 
         Sauce.findOneAndUpdate({ _id: req.params.id }, { $pull: { usersLiked: req.body.userId }, $pull: { usersDisliked: req.body.userId } })
-        Sauce.updateOne({ _id: req.params.id }, { likes: 1 }, { dislikes: -1 })
+        Sauce.updateOne({ _id: req.params.id }, { likes: 0 }, { dislikes: 0 })
 
-            .then(sauce => res.status(200).json(sauceObject))
-            .catch(error => res.status(401).json({ error }));
-
+        .then(sauce => res.status(200).json(sauceObject))
+        .catch(error => res.status(401).json({ error }));
 
     }
 }
