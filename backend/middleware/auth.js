@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 require('dotenv').config()
 
+
 // controle du TOKEN pour authentification renforcée pour nos ROUTES.
  
 module.exports = (req, res, next) => {

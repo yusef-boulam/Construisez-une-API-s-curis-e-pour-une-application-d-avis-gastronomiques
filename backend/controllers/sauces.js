@@ -94,8 +94,8 @@ exports.modifyLikes = (req, res, next,) => {
     const sauceObject = { ...req.body };
     if (req.body.like === 1) {
 
-        Sauce.findOne({ _id: req.params.id }, { $addToSet: { usersLiked: req.body.userId } })
-        Sauce.findOneAndUpdate({ _id: req.params.id }, { likes: usersLiked.length, _id: req.params.id }, { dilikes: usersDisliked.length, _id: req.params.id })
+        Sauce.findOneAndUpdate({ _id: req.params.id }, { $addToSet: { usersLiked: req.body.userId } })
+        Sauce.findOneAndUpdate({ _id: req.params.id }, { likes: 1, _id: req.params.id }, { dilikes: 1, _id: req.params.id })
 
             .then(sauce => res.status(200).json(sauce))
             .catch(error => res.status(401).json({ error }));
