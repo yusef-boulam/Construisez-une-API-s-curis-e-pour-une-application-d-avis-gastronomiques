@@ -8,7 +8,7 @@ exports.getAllSauce = (req, res, next) => {
     //on utilise la methode find pour recuperer toutes les sauces
     Sauce.find()
         .then(sauces => res.status(200).json(sauces))
-        .catch(error => res.status(400).json({ error :"La syntaxe de la requête est erronée"}));
+        .catch(error => res.status(400).json({ error: "La syntaxe de la requête est erronée" }));
 }
 
 // ROUTE GET qui cible UNE SAUCE
@@ -16,7 +16,7 @@ exports.getOneSauce = (req, res, next) => {
     //findOne permet de cible la sauce. en parametre on compare l'id recherché
     Sauce.findOne({ _id: req.params.id })
         .then(sauce => {
-            if (sauce === null) { res.status(404).json({ error : "La sauce n'existe pas" }) }
+            if (sauce === null) { res.status(404).json({ error: "La sauce n'existe pas" }) }
             else { res.status(200).json(sauce) }
         })
         .catch(error => res.status(404).json({ error: "Ressources non trouvées" }));
@@ -49,19 +49,37 @@ exports.createSauce = (req, res, next) => {
 // ON MODIFIE UNE SAUCE
 // deux gestions differentes 1: avec image en string 2: sans image en objet
 exports.modifySauce = (req, res, next) => {
+
     const sauceObject = req.file ? {
         ...JSON.parse(req.body.sauce),
+
         imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
     } : { ...req.body };
+
 
     Sauce.findOne({ _id: req.params.id })
         .then((sauce) => {
             if (sauce.userId != req.auth.userId) {
                 res.status(401).json({ message: 'Not authorized' });
             } else {
+                // on supprime l'ancienne image si ajout d'une nouvelle image
+                // Remove old photo
+                if (sauceObject.imageUrl != null) {
+                    const filename = sauce.imageUrl.split('/images/')[1];
+                    if (fs.existsSync(`images/${filename}`)) {
+                        fs.unlink(`images/${filename}`, (err) => {
+                            if (err) {
+                                console.error(err);
+                                return;
+                            }
+                            res.status(200);
+                        });
+                    }
+                }
+                // on met à jour la sauce
                 Sauce.updateOne({ _id: req.params.id }, { ...sauceObject, _id: req.params.id })
                     .then(sauce => res.status(200).json(sauceObject))
-                    .catch(error => res.status(400).json({ error: "La syntaxe de la requête est erronée"}));
+                    .catch(error => res.status(400).json({ error: "La syntaxe de la requête est erronée" }));
             }
         })
         .catch((error) => {
@@ -96,16 +114,16 @@ exports.modifyLikes = (req, res, next,) => {
     const sauceObject = { ...req.body };
     if (req.body.like === 1) {
 
-        Sauce.findOneAndUpdate({ _id: req.params.id }, { $addToSet: { usersLiked: req.auth.userId } }).then((sauce)  => {
+        Sauce.findOneAndUpdate({ _id: req.params.id }, { $addToSet: { usersLiked: req.auth.userId } }).then((sauce) => {
             sauce.likes += 1;
             console.log(sauce)
-            sauce.save().then((saucelike) => {res.status(200).json(saucelike)})
-        } )
+            sauce.save().then((saucelike) => { res.status(200).json(saucelike) })
+        })
 
         // Sauce.findOneAndUpdate({ _id: req.params.id }, { likes: 1, _id: req.params.id }, { dilikes: 1, _id: req.params.id })
 
-            // .then(sauce => res.status(200).json(sauce))
-            // .catch(error => res.status(401).json({ error }));
+        // .then(sauce => res.status(200).json(sauce))
+        // .catch(error => res.status(401).json({ error }));
 
 
     } else if (req.body.like === -1) {
@@ -123,8 +141,8 @@ exports.modifyLikes = (req, res, next,) => {
         Sauce.findOneAndUpdate({ _id: req.params.id }, { $pull: { usersLiked: req.auth.userId }, $pull: { usersDisliked: req.auth.userId } })
         Sauce.updateOne({ _id: req.params.id }, { likes: 0 }, { dislikes: 0 })
 
-        .then(sauce => res.status(200).json(sauceObject))
-        .catch(error => res.status(404).json({ error }));
+            .then(sauce => res.status(200).json(sauceObject))
+            .catch(error => res.status(404).json({ error }));
 
     }
 }
