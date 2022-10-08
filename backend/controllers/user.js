@@ -12,10 +12,6 @@ require('dotenv').config()
 //hachage du mot de passe à la création d'un utilisateur
 
 exports.signup = (req, res, next) => {
-  // generate a salt on mouline 10 fois
-  // SALT_WORK_FACTOR =
-  // bcrypt.genSalt(SALT_WORK_FACTOR, function (err, salt) {
-  //   if (err) return next(err);
 
   // TEST de la complexite de la password
   const password = req.body.password

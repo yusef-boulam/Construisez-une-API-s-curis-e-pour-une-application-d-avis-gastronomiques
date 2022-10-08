@@ -8,7 +8,7 @@ exports.getAllSauce = (req, res, next) => {
     //on utilise la methode find pour recuperer toutes les sauces
     Sauce.find()
         .then(sauces => res.status(200).json(sauces))
-        .catch(error => res.status(400).json({ error }));
+        .catch(error => res.status(400).json({ error :"La syntaxe de la requête est erronée"}));
 }
 
 // ROUTE GET qui cible UNE SAUCE
@@ -16,32 +16,34 @@ exports.getOneSauce = (req, res, next) => {
     //findOne permet de cible la sauce. en parametre on compare l'id recherché
     Sauce.findOne({ _id: req.params.id })
         .then(sauce => {
-            if (sauce === null) { res.status(404).json({ error }) }
+            if (sauce === null) { res.status(404).json({ error : "La sauce n'existe pas" }) }
             else { res.status(200).json(sauce) }
         })
-        .catch(error => res.status(404).json({ error }));
+        .catch(error => res.status(404).json({ error: "Ressources non trouvées" }));
 }
 
 //ON CREE UNE NOUVELLE SAUCE
 exports.createSauce = (req, res, next) => {
     // on parse car avec l'image présente dans la requette on recoit une string
     const sauceObject = JSON.parse(req.body.sauce);
-    //on supprime les identifiants de l'objet
     console.log(sauceObject)
+
     const sauce = new Sauce({
-        // on stocke le nouvel objet sans les ID
+        // on stocke le nouvel objet avec les ... qui est un raccourci pour stoquer l'enseble de l'objet.
         ...sauceObject,
-        //recuperartion du user id directement du TOKEN
+        //on remplace le user id par le user id pris directement du TOKEN
         userId: req.auth.userId,
 
         //on génére l'url de l'image
         // protocolle + nom d'hote + nom de fichier donnée par MULTER
         imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
     });
+
+    console.log(sauce)
     // on sauvegarder la sauce sur le serveur
     sauce.save()
-        .then(() => { res.status(201).json({ message: 'Objet enregistré !', sauce }) })  // RENVOYER LA REPONSE
-        .catch(error => { res.status(400).json({ error }) })
+        .then(() => { res.status(201).json({ message: 'Objet enregistré !', sauce }) })  // RENVOYER LA REPONSE + la SAUCE
+        .catch(error => { res.status(400).json({ error: "la nouvelle sauce n'a pas pu être sauvegardé sur le serveur" }) })
 };
 
 // ON MODIFIE UNE SAUCE
@@ -59,11 +61,11 @@ exports.modifySauce = (req, res, next) => {
             } else {
                 Sauce.updateOne({ _id: req.params.id }, { ...sauceObject, _id: req.params.id })
                     .then(sauce => res.status(200).json(sauceObject))
-                    .catch(error => res.status(401).json({ error }));
+                    .catch(error => res.status(400).json({ error: "La syntaxe de la requête est erronée"}));
             }
         })
         .catch((error) => {
-            res.status(400).json({ error });
+            res.status(404).json({ error: "La sauce n'existe pas" });
         });
 };
 
@@ -78,46 +80,51 @@ exports.deleteSauce = (req, res, next) => {
                 fs.unlink(`images/${filename}`, () => {
                     Sauce.deleteOne({ _id: req.params.id })
                         .then(() => { res.status(204).json() })
-                        .catch(error => res.status(404).json({ error }));
+                        .catch(error => res.status(404).json({ error: "la sauce n'a pas pu être supprimé - ressource non trouvé" }));
                 });
             }
         })
         .catch(error => {
-            res.status(500).json({ error });
+            res.status(404).json({ error: "La sauce n'existe pas" });
         });
 };
 
 // LIKER OU DISLIKER DE LA SAUCE 
 exports.modifyLikes = (req, res, next,) => {
-    console.log(req.body)
+    console.log(req.body, req.auth.userId)
 
     const sauceObject = { ...req.body };
     if (req.body.like === 1) {
 
-        Sauce.findOneAndUpdate({ _id: req.params.id }, { $addToSet: { usersLiked: req.body.userId } })
-        Sauce.findOneAndUpdate({ _id: req.params.id }, { likes: 1, _id: req.params.id }, { dilikes: 1, _id: req.params.id })
+        Sauce.findOneAndUpdate({ _id: req.params.id }, { $addToSet: { usersLiked: req.auth.userId } }).then((sauce)  => {
+            sauce.likes += 1;
+            console.log(sauce)
+            sauce.save().then((saucelike) => {res.status(200).json(saucelike)})
+        } )
 
-            .then(sauce => res.status(200).json(sauce))
-            .catch(error => res.status(401).json({ error }));
+        // Sauce.findOneAndUpdate({ _id: req.params.id }, { likes: 1, _id: req.params.id }, { dilikes: 1, _id: req.params.id })
+
+            // .then(sauce => res.status(200).json(sauce))
+            // .catch(error => res.status(401).json({ error }));
 
 
     } else if (req.body.like === -1) {
 
-        Sauce.findOneAndUpdate({ _id: req.params.id }, { $addToSet: { usersDisliked: req.body.userId } })
+        Sauce.findOneAndUpdate({ _id: req.params.id }, { $addToSet: { usersDisliked: req.auth.userId } })
         Sauce.updateOne({ _id: req.params.id }, { likes: 0 }, { dislikes: 0 })
 
             .then(sauce => res.status(200).json(sauceObject))
-            .catch(error => res.status(401).json({ error }));
+            .catch(error => res.status(403).json({ error }));
 
 
 
     } else if (req.body.like === 0) {
 
-        Sauce.findOneAndUpdate({ _id: req.params.id }, { $pull: { usersLiked: req.body.userId }, $pull: { usersDisliked: req.body.userId } })
+        Sauce.findOneAndUpdate({ _id: req.params.id }, { $pull: { usersLiked: req.auth.userId }, $pull: { usersDisliked: req.auth.userId } })
         Sauce.updateOne({ _id: req.params.id }, { likes: 0 }, { dislikes: 0 })
 
         .then(sauce => res.status(200).json(sauceObject))
-        .catch(error => res.status(401).json({ error }));
+        .catch(error => res.status(404).json({ error }));
 
     }
 }
