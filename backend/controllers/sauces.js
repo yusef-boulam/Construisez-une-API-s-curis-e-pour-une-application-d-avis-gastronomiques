@@ -43,27 +43,31 @@ exports.createSauce = (req, res, next) => {
     // on sauvegarder la sauce sur le serveur
     sauce.save()
         .then(() => { res.status(201).json({ message: 'Objet enregistré !', sauce }) })  // RENVOYER LA REPONSE + la SAUCE
-        .catch(error => { res.status(400).json({ error: "la nouvelle sauce n'a pas pu être sauvegardé sur le serveur" }) })
+        .catch(error => { res.status(400).json({ error }) })
 };
 
 // ON MODIFIE UNE SAUCE
 // deux gestions differentes 1: avec image en string 2: sans image en objet
 exports.modifySauce = (req, res, next) => {
 
+    //on recupere l'objet que l'on parse ou non s'il contient une image et on ajoute le userId du TOKEN
     const sauceObject = req.file ? {
         ...JSON.parse(req.body.sauce),
 
-        imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
-    } : { ...req.body };
+        imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`,
+        userId: req.auth.userId,
+    } : { ...req.body,
+        userId: req.auth.userId,
+    };
 
-
+// on recuprer la sauce et on verifie l'autentification
     Sauce.findOne({ _id: req.params.id })
         .then((sauce) => {
             if (sauce.userId != req.auth.userId) {
                 res.status(401).json({ message: 'Not authorized' });
             } else {
+
                 // on supprime l'ancienne image si ajout d'une nouvelle image
-                // Remove old photo
                 if (sauceObject.imageUrl != null) {
                     const filename = sauce.imageUrl.split('/images/')[1];
                     if (fs.existsSync(`images/${filename}`)) {
@@ -76,10 +80,12 @@ exports.modifySauce = (req, res, next) => {
                         });
                     }
                 }
-                // on met à jour la sauce
-                Sauce.updateOne({ _id: req.params.id }, { ...sauceObject, _id: req.params.id })
-                    .then(sauce => res.status(200).json(sauceObject))
-                    .catch(error => res.status(400).json({ error: "La syntaxe de la requête est erronée" }));
+                // on passe les entrée par la validatione et on sauvegarde
+                sauce = new Sauce(sauceObject)
+
+                sauce.save()
+                 .then(() => { res.status(201).json({ message: 'Objet modifié !', sauce }) })  // RENVOYER LA REPONSE + la SAUCE
+                 .catch(error => { res.status(400).json({ error }) })
             }
         })
         .catch((error) => {
