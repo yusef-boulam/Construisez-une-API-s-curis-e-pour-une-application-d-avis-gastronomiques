@@ -1,5 +1,6 @@
 const Sauce = require('../models/sauce');
 const fs = require('fs');
+const sauce = require('../models/sauce');
 
 // gestion des ROUTES.   toute la partie "metier"
 
@@ -56,11 +57,13 @@ exports.modifySauce = (req, res, next) => {
 
         imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`,
         userId: req.auth.userId,
-    } : { ...req.body,
+    } : {
+        ...req.body,
         userId: req.auth.userId,
+
     };
 
-// on recuprer la sauce et on verifie l'autentification
+    // on recuprer la sauce et on verifie l'autentification
     Sauce.findOne({ _id: req.params.id })
         .then((sauce) => {
             if (sauce.userId != req.auth.userId) {
@@ -84,8 +87,8 @@ exports.modifySauce = (req, res, next) => {
                 sauce = new Sauce(sauceObject)
 
                 sauce.save()
-                 .then(() => { res.status(201).json({ message: 'Objet modifié !', sauce }) })  // RENVOYER LA REPONSE + la SAUCE
-                 .catch(error => { res.status(400).json({ error }) })
+                    .then(() => { res.status(201).json({ message: 'Objet modifié !', sauce }) })  // RENVOYER LA REPONSE + la SAUCE
+                    .catch(error => { res.status(400).json({ error }) })
             }
         })
         .catch((error) => {
@@ -117,38 +120,36 @@ exports.deleteSauce = (req, res, next) => {
 exports.modifyLikes = (req, res, next,) => {
     console.log(req.body, req.auth.userId)
 
-    const sauceObject = { ...req.body };
     if (req.body.like === 1) {
 
-        Sauce.findOneAndUpdate({ _id: req.params.id }, { $addToSet: { usersLiked: req.auth.userId } }).then((sauce) => {
-            sauce.likes += 1;
+        Sauce.findOneAndUpdate({ _id: req.params.id }, { $addToSet: { usersLiked: req.auth.userId } })
+            .then((sauce) => {
+                // if (usersLiked === req.auth.userId){
+                    sauce.likes = 100;
+                // } else{ sauce.likes = 1; }
+                console.log(sauce)
+                sauce.save()
+                    .then((saucelike) => { res.status(200).json(saucelike) })
+                    .catch(error => res.status(404).json({ error: "probleme au save like" }));
+            })
+            .catch (error => res.status(404).json({ error: "ressource non trouvé" }));
+
+    } else if (req.body.like === 0) {
+
+        Sauce.findOneAndUpdate({ _id: req.params.id }, { $pull: { usersLiked: req.auth.userId }, $pull: { usersLiked: req.auth.userId } }).then((sauce) => {
+            sauce.likes -= 1;
             console.log(sauce)
             sauce.save().then((saucelike) => { res.status(200).json(saucelike) })
         })
 
-        // Sauce.findOneAndUpdate({ _id: req.params.id }, { likes: 1, _id: req.params.id }, { dilikes: 1, _id: req.params.id })
-
-        // .then(sauce => res.status(200).json(sauce))
-        // .catch(error => res.status(401).json({ error }));
-
 
     } else if (req.body.like === -1) {
 
-        Sauce.findOneAndUpdate({ _id: req.params.id }, { $addToSet: { usersDisliked: req.auth.userId } })
-        Sauce.updateOne({ _id: req.params.id }, { likes: 0 }, { dislikes: 0 })
-
-            .then(sauce => res.status(200).json(sauceObject))
-            .catch(error => res.status(403).json({ error }));
-
-
-
-    } else if (req.body.like === 0) {
-
-        Sauce.findOneAndUpdate({ _id: req.params.id }, { $pull: { usersLiked: req.auth.userId }, $pull: { usersDisliked: req.auth.userId } })
-        Sauce.updateOne({ _id: req.params.id }, { likes: 0 }, { dislikes: 0 })
-
-            .then(sauce => res.status(200).json(sauceObject))
-            .catch(error => res.status(404).json({ error }));
+        Sauce.findOneAndUpdate({ _id: req.params.id }, { $addToSet: { usersDisliked: req.auth.userId } }).then((sauce) => {
+            sauce.dislikes += 1;
+            console.log(sauce)
+            sauce.save().then((saucelike) => { res.status(200).json(saucelike) })
+        })
 
     }
 }
