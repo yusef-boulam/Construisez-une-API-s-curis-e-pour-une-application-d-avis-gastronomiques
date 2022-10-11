@@ -27,7 +27,7 @@ exports.getOneSauce = (req, res, next) => {
 exports.createSauce = (req, res, next) => {
     // on parse car avec l'image présente dans la requette on recoit une string
     const sauceObject = JSON.parse(req.body.sauce);
-    console.log(sauceObject)
+
 
     const sauce = new Sauce({
         // on stocke le nouvel objet avec les ... qui est un raccourci pour stoquer l'enseble de l'objet.
@@ -40,7 +40,7 @@ exports.createSauce = (req, res, next) => {
         imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
     });
 
-    console.log(sauce)
+
     // on sauvegarder la sauce sur le serveur
     sauce.save()
         .then(() => { res.status(201).json({ message: 'Objet enregistré !', sauce }) })  // RENVOYER LA REPONSE + la SAUCE
@@ -124,19 +124,19 @@ exports.modifyLikes = (req, res, next,) => {
 
         Sauce.findOne({ _id: req.params.id }).then((sauce) => {
 
-            const userLiked = sauce.findOne({ usersLiked: req.auth.usersLiked }).then((userLiked) => {
+            const userLiked = Sauce.find({ usersLiked: req.auth.usersLiked }).then((userLiked) => {
                 return userLiked
             })
             .catch(error => res.status(404).json({ error: "userLiked non trouvé" }));
             next
 
             if (userLiked === undefined) {
-                sauce.likes += 1;
-                sauce.usersLiked.push(req.auth.usersLiked).then((saucelike) => { res.status(200)})
+                sauce.likes = 1;
+                Sauce.updateOne({ _id: req.params.id }, { $push: { usersLiked: req.auth.userId } }).then((saucelike) => { res.status(200)})
                 .catch(error => res.status(404).json({ error: "probleme au push" }));
                 next
             }
-
+            console.log(sauce)
             sauce.save()
                 .then((saucelike) => { res.status(200).json(saucelike) })
                 .catch(error => res.status(404).json({ error: "probleme au save like" }));
@@ -147,7 +147,7 @@ exports.modifyLikes = (req, res, next,) => {
 
         Sauce.findOneAndUpdate({ _id: req.params.id }, { $pull: { usersLiked: req.auth.userId }, $pull: { usersLiked: req.auth.userId } }).then((sauce) => {
             sauce.likes -= 1;
-            console.log(sauce)
+  
             sauce.save().then((saucelike) => { res.status(200).json(saucelike) })
         })
 
@@ -156,7 +156,7 @@ exports.modifyLikes = (req, res, next,) => {
 
         Sauce.findOneAndUpdate({ _id: req.params.id }, { $addToSet: { usersDisliked: req.auth.userId } }).then((sauce) => {
             sauce.dislikes += 1;
-            console.log(sauce)
+   
             sauce.save().then((saucelike) => { res.status(200).json(saucelike) })
         })
 
