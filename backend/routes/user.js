@@ -19,13 +19,10 @@ const  loginAccountLimiter  =  rateLimit ( {
 } )
 
 
-
 // partie autentification email + mot de passe
 router.post('/signup', userCtrl.signup);
 
-router.post('/login', loginAccountLimiter,
-
-userCtrl.login);
+router.post('/login', loginAccountLimiter, userCtrl.login);
 
 
 module.exports = router;

@@ -71,10 +71,13 @@ exports.modifySauce = (req, res, next) => {
             } else {
 
                 // on supprime l'ancienne image si ajout d'une nouvelle image
+
+                // on supprime l'ancienne image si ajout d'une nouvelle image
+                // Remove old photo
                 if (sauceObject.imageUrl != null) {
-                    const filename = sauce.imageUrl.split('/images/')[1];
-                    if (fs.existsSync(`images/${filename}`)) {
-                        fs.unlink(`images/${filename}`, (err) => {
+                    const oldFileName = sauce.imageUrl.split('/images/')[1];
+                    if (fs.existsSync(`images/${oldFileName}`)) {
+                        fs.unlink(`images/${oldFileName}`, (err) => {
                             if (err) {
                                 console.error(err);
                                 return;
@@ -83,12 +86,9 @@ exports.modifySauce = (req, res, next) => {
                         });
                     }
                 }
-                // on passe les entrée par la validatione et on sauvegarde
-                sauce = new Sauce(sauceObject)
-
-                sauce.save()
-                    .then(() => { res.status(201).json({ message: 'Objet modifié !', sauce }) })  // RENVOYER LA REPONSE + la SAUCE
-                    .catch(error => { res.status(400).json({ error }) })
+                Sauce.updateOne({ _id: req.params.id }, { ...sauceObject, _id: req.params.id })
+                    .then(sauce => res.status(200).json(sauceObject))
+                    .catch(error => res.status(400).json({ error: "La syntaxe de la requête est erronée" }));
             }
         })
         .catch((error) => {
@@ -117,22 +117,31 @@ exports.deleteSauce = (req, res, next) => {
 };
 
 // LIKER OU DISLIKER DE LA SAUCE 
+
 exports.modifyLikes = (req, res, next,) => {
-    console.log(req.body, req.auth.userId)
 
     if (req.body.like === 1) {
 
-        Sauce.findOneAndUpdate({ _id: req.params.id }, { $addToSet: { usersLiked: req.auth.userId } })
-            .then((sauce) => {
-                // if (usersLiked === req.auth.userId){
-                    sauce.likes = 100;
-                // } else{ sauce.likes = 1; }
-                console.log(sauce)
-                sauce.save()
-                    .then((saucelike) => { res.status(200).json(saucelike) })
-                    .catch(error => res.status(404).json({ error: "probleme au save like" }));
+        Sauce.findOne({ _id: req.params.id }).then((sauce) => {
+
+            const userLiked = sauce.findOne({ usersLiked: req.auth.usersLiked }).then((userLiked) => {
+                return userLiked
             })
-            .catch (error => res.status(404).json({ error: "ressource non trouvé" }));
+            .catch(error => res.status(404).json({ error: "userLiked non trouvé" }));
+            next
+
+            if (userLiked === undefined) {
+                sauce.likes += 1;
+                sauce.usersLiked.push(req.auth.usersLiked).then((saucelike) => { res.status(200)})
+                .catch(error => res.status(404).json({ error: "probleme au push" }));
+                next
+            }
+
+            sauce.save()
+                .then((saucelike) => { res.status(200).json(saucelike) })
+                .catch(error => res.status(404).json({ error: "probleme au save like" }));
+        })
+            .catch(error => res.status(404).json({ error: "ressource non trouvé" }));
 
     } else if (req.body.like === 0) {
 
