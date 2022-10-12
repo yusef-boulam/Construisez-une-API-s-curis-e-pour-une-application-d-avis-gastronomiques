@@ -40,6 +40,8 @@ exports.createSauce = (req, res, next) => {
         imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
     });
 
+    sauce.likes = 0;
+    sauce.dislikes = 0;
 
     // on sauvegarder la sauce sur le serveur
     sauce.save()
@@ -63,14 +65,13 @@ exports.modifySauce = (req, res, next) => {
 
     };
 
+
     // on recuprer la sauce et on verifie l'autentification
     Sauce.findOne({ _id: req.params.id })
         .then((sauce) => {
             if (sauce.userId != req.auth.userId) {
                 res.status(401).json({ message: 'Not authorized' });
             } else {
-
-                // on supprime l'ancienne image si ajout d'une nouvelle image
 
                 // on supprime l'ancienne image si ajout d'une nouvelle image
                 // Remove old photo
@@ -86,6 +87,8 @@ exports.modifySauce = (req, res, next) => {
                         });
                     }
                 }
+
+                // on met à jour la sauce
                 Sauce.updateOne({ _id: req.params.id }, { ...sauceObject, _id: req.params.id })
                     .then(sauce => res.status(200).json(sauceObject))
                     .catch(error => res.status(400).json({ error: "La syntaxe de la requête est erronée" }));
@@ -120,46 +123,36 @@ exports.deleteSauce = (req, res, next) => {
 
 exports.modifyLikes = (req, res, next,) => {
 
-    if (req.body.like === 1) {
+         Sauce.findOne({ _id: req.params.id }).then((sauce) => {
+        
+            const liked = sauce.usersLiked.includes(req.auth.userId)
+            const disliked = sauce.usersDisliked.includes(req.auth.userId)
 
-        Sauce.findOne({ _id: req.params.id }).then((sauce) => {
+            console.log(liked);
+            console.log(disliked, req.body.like, req.auth.userId);
 
-            const userLiked = Sauce.find({ usersLiked: req.auth.usersLiked }).then((userLiked) => {
-                return userLiked
-            })
-            .catch(error => res.status(404).json({ error: "userLiked non trouvé" }));
-            next
-
-            if (userLiked === undefined) {
-                sauce.likes = 1;
-                Sauce.updateOne({ _id: req.params.id }, { $push: { usersLiked: req.auth.userId } }).then((saucelike) => { res.status(200)})
-                .catch(error => res.status(404).json({ error: "probleme au push" }));
-                next
+            if(req.body.like === 1 && liked === false && disliked === false) {
+                sauce.likes++;
+                sauce.usersLiked.push(req.auth.userId)
+                sauce.save()
+                .then(() => {return res.status(200).json({ message:"sauce liké" })})
+             .catch(error => {return res.status(404).json({ error: "la sauce n'a pas pu être liké" })});
             }
-            console.log(sauce)
-            sauce.save()
-                .then((saucelike) => { res.status(200).json(saucelike) })
-                .catch(error => res.status(404).json({ error: "probleme au save like" }));
-        })
-            .catch(error => res.status(404).json({ error: "ressource non trouvé" }));
+            else if(req.body.like === -1 && liked === false && disliked === false) {
+                return res.status(200).json({ message:"sauce disliké" })
+            }
+            else if(req.body.like === 0 && (liked || disliked)) {
+                
+                return res.status(200).json({ message:"sauce retiré like ou dislike" })
+            } else{
+                console.log("coucou")
 
-    } else if (req.body.like === 0) {
-
-        Sauce.findOneAndUpdate({ _id: req.params.id }, { $pull: { usersLiked: req.auth.userId }, $pull: { usersLiked: req.auth.userId } }).then((sauce) => {
-            sauce.likes -= 1;
-  
-            sauce.save().then((saucelike) => { res.status(200).json(saucelike) })
-        })
+            res.status(400).json({ message:"impossible de liker ou disliker la sauce" })
 
 
-    } else if (req.body.like === -1) {
-
-        Sauce.findOneAndUpdate({ _id: req.params.id }, { $addToSet: { usersDisliked: req.auth.userId } }).then((sauce) => {
-            sauce.dislikes += 1;
-   
-            sauce.save().then((saucelike) => { res.status(200).json(saucelike) })
-        })
-
-    }
+            }
+            
+         }).catch(error => {res.status(404).json({ error: "La sauce n'existe pas" });
+        });
 }
 

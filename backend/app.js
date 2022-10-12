@@ -42,6 +42,7 @@ app.use('/api/sauces', saucesRoutes);
 //gestion du chargement des images
 app.use('/images', express.static(path.join(__dirname, 'images')));
 
+app.use((req,res) =>{res.status(404).json({ message: 'ce end point n existe pas' })});
 
 // on exporte la const app pour pouvoir l'utiliser dans le fichier server.js
 module.exports = app;
