@@ -1,6 +1,6 @@
 const Sauce = require('../models/sauce');
 const fs = require('fs');
-const sauce = require('../models/sauce');
+const {validateInputUpdate} = require('../middleware/validateInputUpdate');
 
 // gestion des ROUTES.   toute la partie "metier"
 
@@ -53,21 +53,12 @@ exports.createSauce = (req, res, next) => {
 // deux gestions differentes 1: avec image en string 2: sans image en objet
 exports.modifySauce = (req, res, next) => {
 
-    //on recupere l'objet que l'on parse ou non s'il contient une image et on ajoute le userId du TOKEN
-    const sauceObject = req.file ? {
-        ...JSON.parse(req.body.sauce),
+  
+const sauceObject = validateInputUpdate (req, res, next);
 
-        imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`,
-        userId: req.auth.userId,
-    } : {
-        ...req.body,
-        userId: req.auth.userId,
-
-    };
-
-
+if(sauceObject != false ){
     // on recuprer la sauce et on verifie l'autentification
-    Sauce.findOne({ _id: req.params.id })
+     Sauce.findOne({ _id: req.params.id })
         .then((sauce) => {
             if (sauce.userId != req.auth.userId) {
                 res.status(401).json({ message: 'Not authorized' });
@@ -87,7 +78,7 @@ exports.modifySauce = (req, res, next) => {
                         });
                     }
                 }
-
+             
                 // on met à jour la sauce
                 Sauce.updateOne({ _id: req.params.id }, { ...sauceObject, _id: req.params.id })
                     .then(sauce => res.status(200).json(sauceObject))
@@ -97,6 +88,7 @@ exports.modifySauce = (req, res, next) => {
         .catch((error) => {
             res.status(404).json({ error: "La sauce n'existe pas" });
         });
+    }
 };
 
 // ON SUPPRIME UNE SAUCE
@@ -123,6 +115,7 @@ exports.deleteSauce = (req, res, next) => {
 
 exports.modifyLikes = (req, res, next,) => {
 
+    // on vérifie si l'utilisateur à deja liké ou disliké la sauce
          Sauce.findOne({ _id: req.params.id }).then((sauce) => {
         
             const liked = sauce.usersLiked.includes(req.auth.userId)
@@ -131,36 +124,51 @@ exports.modifyLikes = (req, res, next,) => {
             console.log(liked);
             console.log(disliked, req.body.like, req.auth.userId);
 
+    // si l'utilisateur LIKE et qu'il n'a jamais liké ou disliké 
             if(req.body.like === 1 && liked === false && disliked === false) {
+                // on ajoute un like
                 sauce.likes++;
+                // on ajoute l'utilisateur dans le tableau like de la sauce
                 sauce.usersLiked.push(req.auth.userId)
+                // on sauvegarde
                 sauce.save()
+                // on retourne la reponse
                 .then(() => {return res.status(200).json({ message:"sauce liké" })})
              .catch(error => {return res.status(404).json({ error: "la sauce n'a pas pu être liké" })});
             }
+
+    // si l'utilisateur DISLIKE et qu'il n'a jamais liké ou disliké 
             else if(req.body.like === -1 && liked === false && disliked === false) {
+                // on ajoute un dislkikes
                 sauce.dislikes++;
+                // on ajoute l'utilisateur dans le tableau dislike de la sauce
                 sauce.usersDisliked.push(req.auth.userId)
                 sauce.save()
                 return res.status(200).json({ message:"sauce disliké" })
             }
+
+       // si l'utilisateur retire le LIKE ou DISLIKE et qu'il a déja liké ou disliké 
             else if(req.body.like === 0 && (liked || disliked)) {
+
+        // si il avait déjà LIKED
                 if(liked){
+                // on supprime un like
                     sauce.likes--;
+                   // on supprime l'utilisateur dans le tableau like de la sauce
                     sauce.usersLiked = sauce.usersLiked.filter(liked => liked =!req.auth.userId)
                     sauce.save()
                     return res.status(200).json({ message:"sauce retiré like"})
 
+        // si il avait déjà DISLIKED
                 }else if(disliked){
                     sauce.dislikes--;
                     sauce.usersDisliked = sauce.usersDisliked.filter(disliked => disliked =!req.auth.userId)
                     sauce.save()
                     return res.status(200).json({ message:"sauce retiré dislike"})
                 }
-
+        
+        //sinon on retourne une erreur
             } else{
-                console.log("coucou")
-
             res.status(400).json({ message:"impossible de liker ou disliker la sauce" })
 
 
