@@ -139,11 +139,25 @@ exports.modifyLikes = (req, res, next,) => {
              .catch(error => {return res.status(404).json({ error: "la sauce n'a pas pu être liké" })});
             }
             else if(req.body.like === -1 && liked === false && disliked === false) {
+                sauce.dislikes++;
+                sauce.usersDisliked.push(req.auth.userId)
+                sauce.save()
                 return res.status(200).json({ message:"sauce disliké" })
             }
             else if(req.body.like === 0 && (liked || disliked)) {
-                
-                return res.status(200).json({ message:"sauce retiré like ou dislike" })
+                if(liked){
+                    sauce.likes--;
+                    sauce.usersLiked = sauce.usersLiked.filter(liked => liked =!req.auth.userId)
+                    sauce.save()
+                    return res.status(200).json({ message:"sauce retiré like"})
+
+                }else if(disliked){
+                    sauce.dislikes--;
+                    sauce.usersDisliked = sauce.usersDisliked.filter(disliked => disliked =!req.auth.userId)
+                    sauce.save()
+                    return res.status(200).json({ message:"sauce retiré dislike"})
+                }
+
             } else{
                 console.log("coucou")
 
