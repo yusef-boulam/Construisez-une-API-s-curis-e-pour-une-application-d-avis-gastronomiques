@@ -10,7 +10,7 @@ const rateLimit = require('express-rate-limit')
 
 // limite les tentatives de connections à 5 toutes les 15 minutes
 const  loginAccountLimiter  =  rateLimit ( { 
-	windowMs : 1  *  5  *  1000 ,  // 5 sec 
+	windowMs : 15 * 60 * 1000 ,  // 15 min 
 	max : 5 ,  // Limite chaque IP à 5 demandes de création de compte par `window` (ici, par heure) 
 	message :
 		 'Trop de tentatives de connections depuis cette IP, veuillez réessayer dans 15 min' , 
